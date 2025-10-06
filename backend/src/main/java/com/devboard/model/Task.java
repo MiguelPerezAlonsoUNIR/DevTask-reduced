@@ -18,9 +18,9 @@ public class Task {
 
     private String title;
     private String description;
-    private String status;     // e.g. "pending", "in-progress", "done"
-    private String priority;   // e.g. "Low", "Medium", "High"
-    private LocalDate dueDate; // ✅ Proper date type for MongoDB
+    private String status;     
+    private String priority;   
+    private LocalDate dueDate; 
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -6,7 +6,7 @@ const TaskForm = ({ onTaskCreated, editingTask, clearEdit }) => {
     title: '',
     description: '',
     status: 'pending',
-    priority: 'Medium', // ✅ Title-case default
+    priority: 'Medium', 
     dueDate: '',
   });
 
@@ -28,7 +28,7 @@ const TaskForm = ({ onTaskCreated, editingTask, clearEdit }) => {
         title: formData.title,
         description: formData.description,
         status: formData.status,
-        priority: formData.priority, // ✅ Must be included
+        priority: formData.priority, 
         dueDate: formData.dueDate,
       };
 

@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks")
-@CrossOrigin(origins = "*") // Allow frontend access
+@CrossOrigin(origins = "*") 
 public class TaskController {
 
     @Autowired

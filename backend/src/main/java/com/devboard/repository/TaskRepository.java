@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TaskRepository extends MongoRepository<Task, String> {
-    // You can add custom query methods here later if needed
 }
