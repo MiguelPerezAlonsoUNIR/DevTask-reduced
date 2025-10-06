@@ -1,0 +1,6 @@
+com\devboard\service\TaskService.class
+com\devboard\repository\TaskRepository.class
+com\devboard\controller\TaskController.class
+com\devboard\DevBoardApplication.class
+com\devboard\model\Task$TaskBuilder.class
+com\devboard\model\Task.class
