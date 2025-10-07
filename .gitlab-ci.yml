@@ -1,0 +1,68 @@
+stages:
+  - build
+  - test
+  - dockerize
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend
+  BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend
+
+before_script:
+  - echo "Running pipeline for DevTask..."
+
+build_frontend:
+  stage: build
+  image: node:20
+  script:
+    - cd frontend
+    - npm install --legacy-peer-deps
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist
+
+build_backend:
+  stage: build
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - cd backend
+    - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - backend/target/*.jar
+
+test_backend:
+  stage: test
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - cd backend
+    - mvn test
+
+dockerize_frontend:
+  stage: dockerize
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA ./frontend
+    - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+    - docker push $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA
+
+dockerize_backend:
+  stage: dockerize
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t $BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA ./backend
+    - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+    - docker push $BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA
+
+deploy_dev:
+  stage: deploy
+  script:
+    - echo "Deploy step placeholder — use SSH, Docker Compose, or Helm here"
+  when: manual
