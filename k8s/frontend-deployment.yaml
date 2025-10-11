@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: devtask
+  labels:
+    app: frontend
+    tier: ui
+    project: devtask-kanban
+    owner: ganeshwalunj
+    purpose: fullstack-devops-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      imagePullSecrets:
+        - name: gitlab-registry-secret
+      containers:
+        - name: frontend
+          image: registry.gitlab.com/ganeshwalunj/devtask:latest
+          ports:
+            - containerPort: 4173
