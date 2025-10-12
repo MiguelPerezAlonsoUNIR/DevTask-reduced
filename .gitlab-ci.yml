@@ -47,7 +47,7 @@ dockerize_frontend:
   services:
     - docker:dind
   script:
-    - docker build -t $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA ./frontend
+    - docker build -f frontend/Dockerfile -t $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA ./frontend
     - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - docker push $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA
 
@@ -63,6 +63,25 @@ dockerize_backend:
 
 deploy_dev:
   stage: deploy
+  image: bitnami/kubectl:latest
   script:
-    - echo "Deploy step placeholder — use SSH, Docker Compose, or Helm here"
+    - echo "Setting up kubeconfig..."
+    - mkdir -p ~/.kube
+    - echo "$KUBECONFIG_CONTENT" > ~/.kube/config
+    - kubectl config use-context minikube
+    - echo "Deploying to Kubernetes..."
+    - kubectl apply -f k8s/namespace.yaml
+    - kubectl apply -f k8s/mongo-pv.yaml
+    - kubectl apply -f k8s/mongo-pvc.yaml
+    - kubectl apply -f k8s/mongo-deployment.yaml
+    - kubectl apply -f k8s/mongo-service.yaml
+    - kubectl apply -f k8s/backend-deployment.yaml
+    - kubectl apply -f k8s/backend-service.yaml
+    - kubectl apply -f k8s/backend-hpa.yaml
+    - kubectl apply -f k8s/frontend-deployment.yaml
+    - kubectl apply -f k8s/frontend-service.yaml
+    - kubectl apply -f k8s/ingress-nginx.yaml
+    - kubectl apply -f k8s/ingress.yaml
   when: manual
+  only:
+    - main
