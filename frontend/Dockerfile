@@ -1,31 +1,29 @@
-# Stage 1
+# Stage 1: Build the frontend
 FROM node:20 AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
-
 RUN npm install --legacy-peer-deps
-
 COPY . .
-
 
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 RUN npm run build
 
-# Stage 2
+# Stage 2: Serve the built frontend
 FROM node:20
 
 WORKDIR /app
 
+# Copy built assets
 COPY --from=builder /app/dist ./dist
 
-COPY --from=builder /app/package*.json ./
-
-RUN npm install --legacy-peer-deps
+# Install lightweight static server
+RUN npm install -g serve
 
 EXPOSE 4173
 
-CMD ["npm", "run", "preview"]
+# Serve static files from dist/
+CMD ["serve", "-s", "dist", "-l", "4173"]
