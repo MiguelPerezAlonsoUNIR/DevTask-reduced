@@ -1,0 +1,23 @@
+- name: Get backend pods
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: devtask
+    label_selectors:
+      - app=backend
+  register: backend_pods
+
+- name: Show backend pod info
+  debug:
+    var: backend_pods
+
+- name: Fail if no backend pods found
+  fail:
+    msg: "No backend pods found"
+  when: backend_pods.resources | length == 0
+
+- name: Fail if backend pod not ready
+  fail:
+    msg: "Backend pod is not ready"
+  when:
+    - backend_pods.resources | length > 0
+    - backend_pods.resources[0].status.containerStatuses[0].ready == false

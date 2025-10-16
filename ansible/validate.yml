@@ -1,0 +1,9 @@
+- name: Validate backend health
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    ansible_python_interpreter: "{{ playbook_dir }}/.venv/bin/python3"
+
+  roles:
+    - backend_health
