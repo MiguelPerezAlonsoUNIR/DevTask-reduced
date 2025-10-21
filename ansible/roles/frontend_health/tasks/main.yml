@@ -1,0 +1,40 @@
+- name: Get frontend pods
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: devtask
+    label_selectors:
+      - app=frontend
+  register: frontend_pods
+
+- name: Show frontend pod info
+  debug:
+    var: frontend_pods
+
+- name: Fail if no frontend pods found
+  fail:
+    msg: "No frontend pods found"
+  when: frontend_pods.resources | length == 0
+
+- name: Fail if frontend pod not ready
+  fail:
+    msg: "Frontend pod is not ready"
+  when:
+    - frontend_pods.resources | length > 0
+    - frontend_pods.resources[0].status.containerStatuses[0].ready == false
+
+- name: Set default frontend health URL
+  set_fact:
+    frontend_health_url: "{{ frontend_health_url | default('http://localhost:4173') }}"
+  tags: always
+
+- name: Validate frontend ingress route
+  uri:
+    url: "{{ frontend_health_url }}"
+    method: GET
+    return_content: yes
+    status_code: 200
+  register: frontend_response
+
+- name: Show frontend response
+  debug:
+    var: frontend_response.content
