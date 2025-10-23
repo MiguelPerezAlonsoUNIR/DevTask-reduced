@@ -10,6 +10,11 @@ variables:
   FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend
   BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend
 
+cache:
+  paths:
+    - frontend/node_modules/
+    - backend/.m2/
+
 before_script:
   - echo "Running pipeline for DevTask..."
 
@@ -34,6 +39,14 @@ build_backend:
     paths:
       - backend/target/*.jar
 
+test_frontend:
+  stage: test
+  image: node:20
+  script:
+    - cd frontend
+    - npm install --legacy-peer-deps
+    - npm run test
+
 test_backend:
   stage: test
   image: maven:3.9-eclipse-temurin-17
@@ -48,8 +61,10 @@ dockerize_frontend:
     - docker:dind
   script:
     - docker build -f frontend/Dockerfile -t $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA ./frontend
+    - docker tag $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA $FRONTEND_IMAGE:latest
     - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - docker push $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $FRONTEND_IMAGE:latest
 
 dockerize_backend:
   stage: dockerize
@@ -58,8 +73,10 @@ dockerize_backend:
     - docker:dind
   script:
     - docker build -t $BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA ./backend
+    - docker tag $BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA $BACKEND_IMAGE:latest
     - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - docker push $BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $BACKEND_IMAGE:latest
 
 deploy_dev:
   stage: deploy
@@ -85,3 +102,5 @@ deploy_dev:
   when: manual
   only:
     - main
+  environment:
+    name: dev
